@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IPL Auction Simulator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1>IPL Auction Simulator</h1>
+      <p class="subtitle">Real-time bidding</p>
+      <a href="admin.html" class="admin-link">Admin Panel</a>
+    </header>
+
+    <main class="main">
+      <div class="top-row">
+        <!-- LEFT: Current Player -->
+        <section class="panel panel-left player-card" id="playerCard">
+          <h3 class="panel-title">Current Player</h3>
+          <div class="player-placeholder" id="placeholder">
+            <p>Waiting for auction to start...</p>
+            <p class="hint">Open Admin Panel to start the auction.</p>
+          </div>
+          <div class="player-details hidden" id="playerDetails">
+            <div class="sold-badge hidden" id="soldBadge">SOLD</div>
+            <h2 class="player-name" id="playerName">—</h2>
+            <span class="role-badge" id="playerRole">—</span>
+            <p class="base-price">Base Price: <strong id="basePrice">₹0</strong></p>
+            <p class="player-progress" id="playerProgress">Player 0 / 0</p>
+          </div>
+        </section>
+
+        <!-- CENTER: Current Bid + Timer + BID -->
+        <section class="panel panel-center bid-timer-panel">
+          <h3 class="panel-title">Current Bid</h3>
+          <div class="bid-display">
+            <span class="current-bid" id="currentBid">₹0</span>
+          </div>
+          <p class="highest-bidder">Highest Bidder: <strong id="highestBidder">—</strong></p>
+          <div class="timer-wrap">
+            <span class="timer-label">Time left</span>
+            <span class="timer" id="timer">30</span>
+            <span class="timer-unit">s</span>
+          </div>
+          <div class="bid-section">
+            <label for="teamSelect">Select Team</label>
+            <select id="teamSelect">
+              <option value="">— Select Team —</option>
+              <option value="CSK">CSK</option>
+              <option value="MI">MI</option>
+              <option value="RCB">RCB</option>
+              <option value="KKR">KKR</option>
+              <option value="SRH">SRH</option>
+              <option value="GT">GT</option>
+              <option value="RR">RR</option>
+              <option value="LSG">LSG</option>
+            </select>
+            <button class="btn btn-bid" id="placeBid" disabled>BID</button>
+            <p class="bid-error" id="bidError"></p>
+          </div>
+        </section>
+
+        <!-- RIGHT: Team Purse -->
+        <section class="panel panel-right budgets-panel">
+          <h3 class="panel-title">Team Purse</h3>
+          <ul class="budget-list" id="budgetList"></ul>
+        </section>
+      </div>
+
+      <!-- BOTTOM: Sold Players -->
+      <section class="panel panel-bottom history-section">
+        <h3 class="panel-title">SOLD PLAYERS</h3>
+        <ul class="history-list" id="historyList"></ul>
+      </section>
+    </main>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IPL Auction — Admin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app admin-app">
+    <header class="header">
+      <h1>IPL Auction — Admin</h1>
+      <a href="index.html" class="admin-link">Back to Auction</a>
+    </header>
+
+    <main class="main">
+      <section class="admin-controls">
+        <h2>Controls</h2>
+        <div class="control-buttons">
+          <button class="btn btn-start" id="startAuction">Start Auction</button>
+          <button class="btn btn-next" id="nextPlayer" disabled>Next Player</button>
+          <button class="btn btn-pause" id="pauseAuction" disabled>Pause Auction</button>
+        </div>
+        <p class="admin-status" id="adminStatus">Auction not started.</p>
+      </section>
+
+      <section class="admin-history">
+        <h3>Sold / Unsold (this session)</h3>
+        <ul class="history-list" id="adminHistoryList"></ul>
+      </section>
+    </main>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
