@@ -21,15 +21,17 @@ const highestBidderEl = document.getElementById("highestBidder");
 const timerEl = document.getElementById("timer");
 const timerBar = document.getElementById("timerBar");
 const currentBidLogEl = document.getElementById("currentBidLog");
+const bidDisplay = document.querySelector(".bid-display");
 const playerProgress = document.getElementById("playerProgress");
 const soldBadge = document.getElementById("soldBadge");
+const teamSelect = document.getElementById("teamSelect");
+const placeBidBtn = document.getElementById("placeBid");
+const bidErrorEl = document.getElementById("bidError");
 const historyList = document.getElementById("historyList");
 const budgetList = document.getElementById("budgetList");
 
-const startBtn = document.getElementById("startAuction");
-const nextBtn = document.getElementById("nextPlayer");
-const pauseBtn = document.getElementById("pauseAuction");
-const btnCopyUrl = document.getElementById("btnCopyUrl");
+let hasTeam = false;
+let isAuctionActive = false;
 
 const teamLogos = {
   "RCB": "/images/RCB.png",
@@ -49,23 +51,45 @@ function formatPrice(amount) {
   return `₹${Number(amount).toLocaleString("en-IN")}`;
 }
 
+function showBidError(msg) {
+  bidErrorEl.textContent = msg || "Bid failed.";
+  bidErrorEl.classList.add("visible");
+}
+
+function clearBidError() {
+  bidErrorEl.textContent = "";
+  bidErrorEl.classList.remove("visible");
+}
+
+function updateBidBtnState() {
+  placeBidBtn.disabled = !hasTeam || !isAuctionActive;
+}
+
 function renderPlayer(data) {
   const { currentPlayer, currentBid, highestBidder, playerIndex, totalPlayers, auctionComplete, currentBidLog } = data || {};
   if (auctionComplete || !currentPlayer) {
     placeholder.classList.remove("hidden");
     playerDetails.classList.add("hidden");
-    placeholder.querySelector("p").textContent = auctionComplete ? "Auction complete." : "Click Start to begin.";
+    placeholder.querySelector("p").textContent = auctionComplete ? "Auction complete." : "Waiting for auction to start...";
+    isAuctionActive = false;
+    updateBidBtnState();
+    clearBidError();
+    currentBidLogEl.innerHTML = "";
     return;
   }
   placeholder.classList.add("hidden");
   playerDetails.classList.remove("hidden");
   soldBadge.classList.add("hidden");
+  isAuctionActive = true;
+  updateBidBtnState();
 
   playerName.textContent = currentPlayer.name;
+  
   if (playerAvatar) {
     const initials = currentPlayer.name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
     playerAvatar.textContent = initials;
   }
+
   playerRole.textContent = currentPlayer.role.replace("_", " ");
   playerRole.className = "role-badge " + currentPlayer.role.toLowerCase().replace("_", "-");
 
@@ -94,7 +118,10 @@ function renderPurse(teams) {
   budgetList.innerHTML = Object.entries(teams)
     .map(([name, data]) => {
       const logo = teamLogos[name] ? `<img src="${teamLogos[name]}" class="team-logo-small" alt="${name} logo">` : "";
-      return `<li><span class="team-name">${logo}${name}</span> <span class="team-budget">${formatPrice(data.purse)}</span></li>`;
+      return `<li>
+        <span class="team-name">${logo}${name}</span> 
+        <span class="team-budget">${formatPrice(data.purse)}</span>
+      </li>`;
     })
     .join("");
 }
@@ -111,7 +138,11 @@ function renderSoldPlayers(list) {
       const isUnsold = team === "Unsold";
       const logo = teamLogos[team] ? `<img src="${teamLogos[team]}" class="team-logo-small" alt="${team} logo">` : "";
       const price = s.price != null ? formatPrice(s.price) : (s.finalBid != null ? formatPrice(s.finalBid) : "—");
-      return `<li><span class="sold-name">${name}</span> <span class="sold-buyer ${isUnsold ? 'unsold' : ''}">${logo}→ ${team}</span> <span class="sold-bid">${isUnsold ? '—' : price}</span></li>`;
+      return `<li>
+        <span class="sold-name">${name}</span> 
+        <span class="sold-buyer ${isUnsold ? 'unsold' : ''}">${logo}→ ${team}</span> 
+        <span class="sold-bid">${isUnsold ? '—' : price}</span>
+      </li>`;
     })
     .join("");
 }
@@ -123,6 +154,7 @@ function updateTimer(seconds) {
     timerBar.style.width = `${percentage}%`;
     timerBar.classList.toggle("urgent", seconds <= 10);
   }
+  timerEl.classList.toggle("urgent", seconds <= 10);
 }
 
 // Join room on connect
@@ -132,64 +164,92 @@ socket.on("connect", () => {
 
 socket.on("joinAuction", (state) => {
   displayRoomId.textContent = state.roomId;
-  if (!state.isAdmin) {
-    alert("You are not the admin of this room. Redirecting to bidder view.");
-    window.location.href = `/auction.html?room=${state.roomId}`;
-    return;
-  }
   renderPlayer(state);
   updateTimer(state.timer ?? 30);
   if (state.soldPlayers) renderSoldPlayers(state.soldPlayers);
   if (state.teams) renderPurse(state.teams);
+  if (state.teamOwners) updateTeamSelection(state.teamOwners);
 });
 
-startBtn.addEventListener("click", () => socket.emit("admin:startAuction"));
-nextBtn.addEventListener("click", () => socket.emit("admin:nextPlayer"));
-pauseBtn.addEventListener("click", () => socket.emit("admin:pauseAuction"));
-
-btnCopyUrl.addEventListener("click", () => {
-  const url = `${window.location.origin}/auction.html?room=${roomIdFromUrl}`;
-  navigator.clipboard.writeText(url).then(() => {
-    btnCopyUrl.textContent = "Copied!";
-    setTimeout(() => {
-      btnCopyUrl.textContent = "Copy URL";
-    }, 2000);
+function updateTeamSelection(teamOwners) {
+  const currentTeam = Object.keys(teamOwners).find(t => teamOwners[t] === socket.id);
+  const selectedTeamLogo = document.getElementById("selectedTeamLogo");
+  
+  Array.from(teamSelect.options).forEach(option => {
+    if (!option.value) return;
+    const ownerId = teamOwners[option.value];
+    if (ownerId && ownerId !== socket.id) {
+      option.disabled = true;
+      option.textContent = `${option.value} (Taken)`;
+    } else {
+      option.disabled = false;
+      option.textContent = option.value;
+    }
   });
+
+  if (currentTeam) {
+    teamSelect.value = currentTeam;
+    teamSelect.disabled = true;
+    hasTeam = true;
+    if (teamLogos[currentTeam]) {
+      selectedTeamLogo.src = teamLogos[currentTeam];
+      selectedTeamLogo.classList.add("visible");
+    }
+  } else {
+    teamSelect.disabled = false;
+    hasTeam = false;
+    selectedTeamLogo.classList.remove("visible");
+  }
+  updateBidBtnState();
+}
+
+teamSelect.addEventListener("change", () => {
+  const team = teamSelect.value;
+  if (team) {
+    socket.emit("selectTeam", { team });
+  }
+});
+
+placeBidBtn.addEventListener("click", () => {
+  clearBidError();
+  socket.emit("bid");
+});
+
+btnCopyRoomId.addEventListener("click", () => {
+  navigator.clipboard.writeText(roomIdFromUrl);
+  btnCopyRoomId.textContent = "Copied!";
+  setTimeout(() => btnCopyRoomId.textContent = "Copy", 2000);
 });
 
 socket.on("playerUpdate", (data) => {
   renderPlayer(data);
   updateTimer(data.timer ?? 30);
-  if (data.auctionComplete) {
-    adminStatus.textContent = "Auction complete.";
-    nextBtn.disabled = true;
-  } else if (data.currentPlayer) {
-    adminStatus.textContent = `Current: ${data.currentPlayer.name}`;
-    nextBtn.disabled = false;
-    pauseBtn.disabled = false;
-  }
 });
 
 socket.on("newBid", (data) => {
   currentBidEl.textContent = formatPrice(data.currentBid);
   highestBidderEl.textContent = data.highestBidder || "—";
   if (data.currentBidLog) renderCurrentBidLog(data.currentBidLog);
+  if (bidDisplay) {
+    bidDisplay.classList.add("bid-flash");
+    setTimeout(() => bidDisplay.classList.remove("bid-flash"), 300);
+  }
 });
 
-socket.on("timerUpdate", (data) => updateTimer(data.timer));
-
-socket.on("auctionPaused", (data) => {
-  pauseBtn.textContent = data.isPaused ? "Resume Auction" : "Pause Auction";
-  adminStatus.textContent = data.isPaused ? "Auction paused." : "Auction in progress.";
+socket.on("timerUpdate", (data) => {
+  updateTimer(data.timer);
 });
 
 socket.on("auctionEnd", (data) => {
   soldBadge.classList.remove("hidden");
   if (data.history) renderSoldPlayers(data.history);
+  updateTimer(30);
 });
 
 socket.on("soldPlayers", renderSoldPlayers);
 socket.on("purseUpdate", renderPurse);
+socket.on("teamUpdate", updateTeamSelection);
+socket.on("bidError", (data) => showBidError(data.message));
 socket.on("error", (msg) => {
   alert(msg);
   window.location.href = "/";

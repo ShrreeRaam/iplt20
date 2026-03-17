@@ -3,80 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IPL Auction Simulator</title>
+  <title>IPL Auction — Lobby</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app">
+  <div class="app lobby-app">
     <header class="header">
       <h1>IPL Auction Simulator</h1>
-      <p class="subtitle">Real-time bidding</p>
-      <a href="admin.html" class="admin-link">Admin Panel</a>
+      <p class="subtitle">Real-time bidding with friends</p>
     </header>
 
-    <main class="main">
-      <div class="top-row">
-        <!-- LEFT: Current Player -->
-        <section class="panel panel-left player-card" id="playerCard">
-          <h3 class="panel-title">Current Player</h3>
-          <div class="player-placeholder" id="placeholder">
-            <p>Waiting for auction to start...</p>
-            <p class="hint">Open Admin Panel to start the auction.</p>
+    <main class="lobby-main">
+      <section class="lobby-card panel">
+        <h2>Lobby</h2>
+        <div class="lobby-controls">
+          <div class="lobby-group">
+            <h3>Create a New Room</h3>
+            <p class="hint">Become the auctioneer and manage the bidding.</p>
+            <button id="btnCreateRoom" class="btn btn-primary btn-large">Create Room</button>
           </div>
-          <div class="player-details hidden" id="playerDetails">
-            <div class="sold-badge hidden" id="soldBadge">SOLD</div>
-            <h2 class="player-name" id="playerName">—</h2>
-            <span class="role-badge" id="playerRole">—</span>
-            <p class="base-price">Base Price: <strong id="basePrice">₹0</strong></p>
-            <p class="player-progress" id="playerProgress">Player 0 / 0</p>
+          
+          <div class="divider"><span>OR</span></div>
+          
+          <div class="lobby-group">
+            <h3>Join an Existing Room</h3>
+            <p class="hint">Join as a bidder and compete for players.</p>
+            <div class="join-input-group">
+              <input type="text" id="joinRoomId" placeholder="Enter 4-digit ID" maxlength="4">
+              <button id="btnJoinRoom" class="btn btn-secondary">Join Room</button>
+            </div>
+            <p id="lobbyError" class="bid-error"></p>
           </div>
-        </section>
-
-        <!-- CENTER: Current Bid + Timer + BID -->
-        <section class="panel panel-center bid-timer-panel">
-          <h3 class="panel-title">Current Bid</h3>
-          <div class="bid-display">
-            <span class="current-bid" id="currentBid">₹0</span>
-          </div>
-          <p class="highest-bidder">Highest Bidder: <strong id="highestBidder">—</strong></p>
-          <div class="timer-wrap">
-            <span class="timer-label">Time left</span>
-            <span class="timer" id="timer">30</span>
-            <span class="timer-unit">s</span>
-          </div>
-          <div class="bid-section">
-            <label for="teamSelect">Select Team</label>
-            <select id="teamSelect">
-              <option value="">— Select Team —</option>
-              <option value="CSK">CSK</option>
-              <option value="MI">MI</option>
-              <option value="RCB">RCB</option>
-              <option value="KKR">KKR</option>
-              <option value="SRH">SRH</option>
-              <option value="GT">GT</option>
-              <option value="RR">RR</option>
-              <option value="LSG">LSG</option>
-            </select>
-            <button class="btn btn-bid" id="placeBid" disabled>BID</button>
-            <p class="bid-error" id="bidError"></p>
-          </div>
-        </section>
-
-        <!-- RIGHT: Team Purse -->
-        <section class="panel panel-right budgets-panel">
-          <h3 class="panel-title">Team Purse</h3>
-          <ul class="budget-list" id="budgetList"></ul>
-        </section>
-      </div>
-
-      <!-- BOTTOM: Sold Players -->
-      <section class="panel panel-bottom history-section">
-        <h3 class="panel-title">SOLD PLAYERS</h3>
-        <ul class="history-list" id="historyList"></ul>
+        </div>
       </section>
     </main>
   </div>
   <script src="/socket.io/socket.io.js"></script>
-  <script src="script.js"></script>
+  <script src="lobby.js"></script>
 </body>
 </html>

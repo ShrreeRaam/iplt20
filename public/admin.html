@@ -9,24 +9,75 @@
 <body>
   <div class="app admin-app">
     <header class="header">
-      <h1>IPL Auction — Admin</h1>
-      <a href="index.html" class="admin-link">Back to Auction</a>
+      <h1>IPL Auction Simulator — Admin</h1>
+      <div id="roomInfo" class="room-info">
+        <span class="room-id-badge">Room ID: <strong id="displayRoomId">—</strong></span>
+        <button id="btnCopyRoomId" class="btn btn-sm">Copy</button>
+      </div>
     </header>
 
     <main class="main">
-      <section class="admin-controls">
-        <h2>Controls</h2>
-        <div class="control-buttons">
-          <button class="btn btn-start" id="startAuction">Start Auction</button>
-          <button class="btn btn-next" id="nextPlayer" disabled>Next Player</button>
-          <button class="btn btn-pause" id="pauseAuction" disabled>Pause Auction</button>
-        </div>
-        <p class="admin-status" id="adminStatus">Auction not started.</p>
-      </section>
+      <div class="top-row admin-top-row">
+        <!-- LEFT: Current Player (Spectate) -->
+        <section class="panel panel-left player-card" id="playerCard">
+          <h3 class="panel-title">Spectating Player</h3>
+          <div class="player-placeholder" id="placeholder">
+            <p>Wait for start...</p>
+          </div>
+          <div class="player-details hidden" id="playerDetails">
+            <div class="sold-badge hidden" id="soldBadge">SOLD</div>
+            <div class="player-avatar" id="playerAvatar">?</div>
+            <h2 class="player-name" id="playerName">—</h2>
+            <span class="role-badge" id="playerRole">—</span>
+            <p class="base-price">Base Price: <strong id="basePrice">₹0</strong></p>
+            <p class="player-progress" id="playerProgress">Player 0 / 0</p>
+          </div>
+        </section>
 
-      <section class="admin-history">
-        <h3>Sold / Unsold (this session)</h3>
-        <ul class="history-list" id="adminHistoryList"></ul>
+        <!-- CENTER: Admin Controls -->
+        <section class="panel panel-center admin-controls-panel">
+          <h3 class="panel-title">Auction Controls</h3>
+          <div class="share-controls">
+            <p>Share this room with your friends!</p>
+            <button id="btnCopyUrl" class="btn btn-primary">Copy URL</button>
+          </div>
+          <div class="admin-controls">
+            <button class="btn btn-start" id="startAuction">Start Auction</button>
+            <button class="btn btn-next" id="nextPlayer" disabled>Next Player / SOLD</button>
+            <button class="btn btn-pause" id="pauseAuction" disabled>Pause Auction</button>
+            <p class="admin-status" id="adminStatus">Waiting to start...</p>
+          </div>
+          
+          <div class="bid-timer-spectate">
+            <div class="bid-display-sm">
+              <span class="current-bid" id="currentBid">₹0</span>
+              <p class="highest-bidder">Highest: <strong id="highestBidder">—</strong></p>
+            </div>
+            <div class="timer-wrap">
+              <div class="timer-bar-container">
+                <div class="timer-bar" id="timerBar"></div>
+              </div>
+              <span class="timer" id="timer">30</span>
+            </div>
+          </div>
+          
+          <div class="current-bid-log-container">
+            <h4>Bid Log</h4>
+            <ul id="currentBidLog" class="bid-log"></ul>
+          </div>
+        </section>
+
+        <!-- RIGHT: Team Purse -->
+        <section class="panel panel-right budgets-panel">
+          <h3 class="panel-title">Team Purse</h3>
+          <ul class="budget-list" id="budgetList"></ul>
+        </section>
+      </div>
+
+      <!-- BOTTOM: Sold Players -->
+      <section class="panel panel-bottom history-section">
+        <h3 class="panel-title">SOLD PLAYERS</h3>
+        <ul class="history-list" id="historyList"></ul>
       </section>
     </main>
   </div>
